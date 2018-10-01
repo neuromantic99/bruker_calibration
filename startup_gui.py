@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel,
 from PyQt5.QtGui import QPixmap, QMovie, QFont
 from PyQt5.QtCore import QSize, QRect    
 import sys
-#import win32com.client
+import win32com.client
 import datetime
 import os
 import subprocess
@@ -53,7 +53,6 @@ class startup_gui(QWidget):
         self.grid.addWidget(self._gif,1,2)
 
 
-        
     def build_dropdown(self):
     
         combo = QComboBox(self)
@@ -105,9 +104,12 @@ class startup_gui(QWidget):
         subprocess.Popen('explorer "{0}"'.format(self.pstation_path))
         time.sleep(0.5)
         
-        txt_file = self.local_path + self.date_today + '_packer1.txt'
+        new_text_file = os.path.join(self.local_path, self.date_today + '_packer1.txt')
         
-        print(txt_file)
+        if not os.path.exists(new_text_file):
+            f = open(new_text_file, 'w')
+            f.close()     
+            subprocess.Popen('notepad "{0}"'.format(new_text_file))
         
         
         
@@ -117,22 +119,17 @@ class startup_gui(QWidget):
         try:
             pl = win32com.client.Dispatch('PrairieLink.Application')
             pl.Connect()
-            pl.SendScriptCommands('-SetAcquisitionMode ' + 'mode Resonant')
-            pl.SendScriptCommands('-SetSavePath ' + self.file_path)
-            pl.SendScriptCommands('-SetFileName ' + 'type Zseries')
+            pl.SendScriptCommands('-SetSavePath ' + self.local_path)
+            pl.SendScriptCommands('-SetFileName ' + 'Singlescan ' + self.date_today + '_s')
+            pl.SendScriptCommands('-SetFileName ' + 'Zseries ' + self.date_today + '_z')
+            pl.SendScriptCommands('-SetFileName '  + 'Tseries ' + self.date_today + '_t')
+            # set this last as it takes time
+            pl.SendScriptCommands('-SetAcquisitionMode ' + 'ResonantGalvo')
         except:
             # i apologise to the python gods for the formating of this string
             self.header_text.setText('           Unfortunately I cannot connect to PrairieView right now. \nEnsure software is running and no other Prairielink scripts are active\n                                Click below to try again')
             
-            
-        
 
-        
-        
-                
-            
-        
-                
 if __name__ == '__main__':
     
     app = QApplication(sys.argv)
