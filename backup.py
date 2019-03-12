@@ -126,7 +126,8 @@ PC_DETAILS = {'PACKER1' : ['PACKER1', [r'F:\Data\\']]}
 
 # match this computer name to known aliases
 this_pc_name = None
-this_pc_id = os.environ['COMPUTERNAME']
+#this_pc_id = os.environ['COMPUTERNAME']
+this_pc_id  = 'linux_test'
 for key, values in PC_DETAILS.items():
     pc_id = values[0]
     if pc_id == this_pc_id:
@@ -375,6 +376,13 @@ def main():
     
     # record start time
     t0 = time.time()
+    
+    #check for errors in backup process (JR)
+    block_rip_err = False
+    mp_conv_err = False
+    serv_trans_error = False
+    error_mess = ''
+    
 
     # get complete drive listing
     convert_from_raw_list = []
@@ -392,41 +400,67 @@ def main():
     convert_to_mptiff_list = [item for sublist in convert_to_mptiff_list for item in sublist]
 
     e1 = time.time() - t0
+    
+    try:
 
-    # use Image-Block ripping utility to convert RAW files
-    with open(CONVERT_LOGFILE, 'a') as logfile:
-        logfile.write('Convert RAW to TIFF:' + '\n')
-        if DO_CONVERT_RAW:
-            print(colored('\n' + 'RAWDATA FILES', 'grey','on_white'))
-            if len(convert_from_raw_list) > 0:
-                print('Converting RAWDATA files... (' + str(len(convert_from_raw_list)) + ' file(s))')
-                logfile.write('\n'.join(convert_from_raw_list))
-                convert_raw_to_tiff(convert_from_raw_list)
-            else:
-                print('No RAWDATA files to convert')
-            e2 = time.time() - t0
+        # use Image-Block ripping utility to convert RAW files
+        with open(CONVERT_LOGFILE, 'a') as logfile:
+            logfile.write('Convert RAW to TIFF:' + '\n')
+            if DO_CONVERT_RAW:
+                print(colored('\n' + 'RAWDATA FILES', 'grey','on_white'))
+                if len(convert_from_raw_list) > 0:
+                    print('Converting RAWDATA files... (' + str(len(convert_from_raw_list)) + ' file(s))')
+                    logfile.write('\n'.join(convert_from_raw_list))
+                    convert_raw_to_tiff(convert_from_raw_list)
+                else:
+                    print('No RAWDATA files to convert')
+                e2 = time.time() - t0
+            
+    except:
+        em = 'ERROR IN IMAGE-BLOCK RIPPING TIFF CONVERSION '
+        error_mess += em        
+        block_rip_err = True
 
-    # combine single tiffs into one multipage tiff
-    with open(CONVERT_LOGFILE, 'a') as logfile:
-        logfile.write('\n' + '\n' + 'Combine to MPTIFF:' + '\n')
-        if DO_COMBINE:
-            print(colored('\n' + 'COMBINE TIFFs', 'grey','on_white'))
-            if len(convert_to_mptiff_list) > 0:
-                print('Combining TIFFs... (' + str(len(convert_to_mptiff_list)) + ' file(s))')
-                for tiff_list in convert_to_mptiff_list:
-                    convert_to_mptiff(tiff_list)
-                    logfile.write(tiff_list[0] + '\n')
-            else:
-                print('No TIFFs to combine')
-            e3 = time.time() - t0
-    # transfer data to server
-    if DO_BACKUP:
-        print(colored('\n' + 'BACKUP', 'grey','on_white'))
-        exclude_folders = convert_from_raw_list
-        backup(exclude_folders)
-        e4 = time.time() - t0
 
-    e5 = time.time() - t0
+    try:
+        # combine single tiffs into one multipage tiff
+        with open(CONVERT_LOGFILE, 'a') as logfile:
+            logfile.write('\n' + '\n' + 'Combine to MPTIFF:' + '\n')
+            if DO_COMBINE:
+                print(colored('\n' + 'COMBINE TIFFs', 'grey','on_white'))
+                if len(convert_to_mptiff_list) > 0:
+                    print('Combining TIFFs... (' + str(len(convert_to_mptiff_list)) + ' file(s))')
+                    for tiff_list in convert_to_mptiff_list:
+                        convert_to_mptiff(tiff_list)
+                        logfile.write(tiff_list[0] + '\n')
+                else:
+                    print('No TIFFs to combine')
+                e3 = time.time() - t0
+    
+    except:
+        em = 'ERROR IN MULTIPAGE TIFF CONVERSION '
+        print(em)
+        error_mess += em
+        mp_conv_err = True
+                
+            
+            
+    try:
+            
+        # transfer data to server
+        if DO_BACKUP:
+            print(colored('\n' + 'BACKUP', 'grey','on_white'))
+            exclude_folders = convert_from_raw_list
+            backup(exclude_folders)
+            e4 = time.time() - t0
+
+        e5 = time.time() - t0
+        
+    except:
+        em = 'ERROR TRANSFERRING DATA TO SERVER '
+        print(em)
+        error_m += em
+        serv_trans_error = True
 
     print(colored('\n' + '\n' + 'Completed in ' + '{0:.2f}'.format(e5/60) + ' minutes', 'white','on_green'))
 

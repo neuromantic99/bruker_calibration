@@ -99,7 +99,7 @@ class startup_gui(QWidget):
             self.pstation_path = r'Z:\jrowland\Data\{}'.format(self.date_today)
         elif self.user_name == 'Adam':
             self.local_path = r'F:\Data\apacker\{}'.format(self.date_today)
-            self.pstation_path = r'Z:\apacker\{}'.format(self.date_today)
+            self.pstation_path = r'Z:\apacker\Data\{}'.format(self.date_today)
         elif self.user_name == 'Ankit':
             self.local_path = r'F:\Data\aranjan\{}'.format(self.date_today)
             self.pstation_path = r'Z:\aranjan\Data\{}'.format(self.date_today)
@@ -108,7 +108,7 @@ class startup_gui(QWidget):
             self.pstation_path = r'Z:\rlees\Data\{}'.format(self.date_today)
         elif self.user_name == 'Adam H':
             self.local_path = r'F:\Data\aharris\{}'.format(self.date_today)
-            self.pstation_path = r'Z:\aharris\{}'.format(self.date_today)
+            self.pstation_path = r'Z:\aharris\Data\{}'.format(self.date_today)
             
             
         if not os.path.exists(self.local_path):
