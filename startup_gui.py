@@ -8,6 +8,9 @@ import datetime
 import os
 import subprocess
 import time
+import yaml
+from pathlib import Path
+
 
 class startup_gui(QWidget):
     
@@ -21,6 +24,9 @@ class startup_gui(QWidget):
         #whether the try again and continue buttons are already present
         self.buttons_present = False
         self.show()
+        
+        self.yaml_path = r'C:\Users\User\Documents\Code\blimp\blimp_settings.yaml'
+        
 
     def initUI(self):
         self.setWindowTitle('Packer1')
@@ -61,6 +67,8 @@ class startup_gui(QWidget):
         combo.addItem('Jimmy')
         combo.addItem('Rob')
         combo.addItem('Andrew')
+        combo.addItem('Ankit')
+        combo.addItem('Adam H')
         combo.setMaximumWidth(1000)
         self.grid.addWidget(combo, 2,1)
       
@@ -92,19 +100,47 @@ class startup_gui(QWidget):
         elif self.user_name == 'Adam':
             self.local_path = r'F:\Data\apacker\{}'.format(self.date_today)
             self.pstation_path = r'Z:\apacker\{}'.format(self.date_today)
+        elif self.user_name == 'Ankit':
+            self.local_path = r'F:\Data\aranjan\{}'.format(self.date_today)
+            self.pstation_path = r'Z:\aranjan\Data\{}'.format(self.date_today)
+        elif self.user_name == 'Rob':
+            self.local_path = r'F:\Data\rlees\{}'.format(self.date_today)
+            self.pstation_path = r'Z:\rlees\Data\{}'.format(self.date_today)
+        elif self.user_name == 'Adam H':
+            self.local_path = r'F:\Data\aharris\{}'.format(self.date_today)
+            self.pstation_path = r'Z:\aharris\{}'.format(self.date_today)
             
             
         if not os.path.exists(self.local_path):
             os.makedirs(self.local_path)
-        if not os.path.exists(self.pstation_path):
-            os.makedirs(self.pstation_path)
             
+        try:
+            if not os.path.exists(self.pstation_path):
+                os.makedirs(self.pstation_path)
+        except:
+            self.header_text.setText('Sorry {} i cant connect to the packerstation right now, make sure it is connected and reselect your name'.format(self.user_name))
+            
+            
+        #setup blimp yaml      
+        with open(self.yaml_path, 'r') as stream:
+            yaml_dict = yaml.load(stream)
+        
+
+        yaml_dict['output_path'] = os.path.join(self.local_path, 'blimp')
+        
+            
+        with open(self.yaml_path, 'w') as f:
+            yaml.dump(yaml_dict, f)
+        
+
+           
         # open the folders in explorer
         subprocess.Popen('explorer "{0}"'.format(self.local_path))
-        subprocess.Popen('explorer "{0}"'.format(self.pstation_path))
+        #subprocess.Popen('explorer "{0}"'.format(self.pstation_path))
         time.sleep(0.5)
         
         new_text_file = os.path.join(self.local_path, self.date_today + '_packer1.txt')
+
         
         if not os.path.exists(new_text_file):
             f = open(new_text_file, 'w')
@@ -123,6 +159,8 @@ class startup_gui(QWidget):
             pl.SendScriptCommands('-SetFileName ' + 'Singlescan ' + self.date_today + '_s')
             pl.SendScriptCommands('-SetFileName ' + 'Zseries ' + self.date_today + '_z')
             pl.SendScriptCommands('-SetFileName '  + 'Tseries ' + self.date_today + '_t')
+            pl.SendScriptCommands('-SetImageSize ' +  '512')
+            pl.SendScriptCommands('-SetOpticalZoom ' + '1.0') 
             # set this last as it takes time
             pl.SendScriptCommands('-SetAcquisitionMode ' + 'ResonantGalvo')
         except:

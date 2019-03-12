@@ -1,11 +1,13 @@
-function vignetting(folder)
-% takes input of a folder with multiple PMT channel images and prints vignetting of each channel tif in
-% folder
-close all 
-% unimportant warning 
+function vignetting_fudge(folder)
+
+% unimportant warning that 
 warning('off','MATLAB:imagesci:tifftagsread:badTagValueDivisionByZero')
 
 tif_list = dir(fullfile(folder, '*.tif'));
+
+figPos = 0;
+figure
+hold on
 
 for i = 1:length(tif_list)
     
@@ -28,12 +30,14 @@ for i = 1:length(tif_list)
     
     width_mean = mean(width_line, 1);
     height_mean = mean(height_line, 2);
-
-    figure
+    
+    figPos = figPos +1;
+    subplot(length(tif_list),2,figPos)
     plot(width_mean)
     title(['hortizonal line CH' num2str(i)])
-
-    figure
+    
+    figPos = figPos +1;
+    subplot(length(tif_list),2,figPos)
     plot(height_mean)
     title(['vertical line CH' num2str(i)])
     
