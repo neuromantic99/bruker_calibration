@@ -72,6 +72,9 @@ import getopt
 import warnings
 from skimage.external import tifffile
 import xml.etree.ElementTree
+from PIL import Image
+from PIL import ImageFont
+from PIL import ImageDraw 
 
 # disable warnings
 warnings.filterwarnings('ignore')  # tifffile gives ugly unneccessary warnings
@@ -122,12 +125,11 @@ if not args.search == None:
     # 'BRUKER2-PC2': ['BRUKER2-PC2', ['C:/Data', 'C:/git/PyBehaviour/Results']]
 # }
 
-PC_DETAILS = {'PACKER1' : ['PACKER1', [r'F:\Data\\']]}
+PC_DETAILS = {'PACKER1' : ['PACKER1', [r'F:\Data\\', r'E:\Data\\']]}
 
 # match this computer name to known aliases
 this_pc_name = None
-#this_pc_id = os.environ['COMPUTERNAME']
-this_pc_id  = 'linux_test'
+this_pc_id = os.environ['COMPUTERNAME']
 for key, values in PC_DETAILS.items():
     pc_id = values[0]
     if pc_id == this_pc_id:
@@ -144,8 +146,8 @@ DESTINATION = r'Z:\*\Data'  # research data
 SERVER_MAPPINGS = {'Jimmy'  : 'jrowland',
                    'Adam'   : 'apacker',
                    'Rob'    : 'rlees', 
-                   'Ankit'  : 'aranjan',
-                   'AdamH'  : 'aharris'                   
+                   'AdamH'  : 'aharris',
+                   'David'  : 'doliver'
                   } 
                   
 
@@ -402,7 +404,6 @@ def main():
     e1 = time.time() - t0
     
     try:
-
         # use Image-Block ripping utility to convert RAW files
         with open(CONVERT_LOGFILE, 'a') as logfile:
             logfile.write('Convert RAW to TIFF:' + '\n')
@@ -417,7 +418,8 @@ def main():
                 e2 = time.time() - t0
             
     except:
-        em = 'ERROR IN IMAGE-BLOCK RIPPING TIFF CONVERSION '
+        em = 'ERROR IN\nIMAGE-BLOCK RIPPING TIFF\nCONVERSION\n\n\n'
+        print(em)
         error_mess += em        
         block_rip_err = True
 
@@ -438,7 +440,11 @@ def main():
                 e3 = time.time() - t0
     
     except:
-        em = 'ERROR IN MULTIPAGE TIFF CONVERSION '
+        #prevents fatal error if fails on first tiff
+        if 'tiff_list' in locals():
+            em = 'ERROR IN MULTIPAGE TIFF CONVERSION cannot convert {}\n'.format(tiff_list[0])
+        else:
+            em = 'ERROR IN\nMULTIPAGE TIFF CONVERSION\n\n\n'
         print(em)
         error_mess += em
         mp_conv_err = True
@@ -446,7 +452,6 @@ def main():
             
             
     try:
-            
         # transfer data to server
         if DO_BACKUP:
             print(colored('\n' + 'BACKUP', 'grey','on_white'))
@@ -457,12 +462,21 @@ def main():
         e5 = time.time() - t0
         
     except:
-        em = 'ERROR TRANSFERRING DATA TO SERVER '
+        em = 'ERROR in\nTRANSFERRING DATA TO SERVER\n\n\n'
         print(em)
-        error_m += em
+        error_mess += em
         serv_trans_error = True
-
-    print(colored('\n' + '\n' + 'Completed in ' + '{0:.2f}'.format(e5/60) + ' minutes', 'white','on_green'))
+    
+    if 'e5' in locals():
+        print(colored('\n' + '\n' + 'Completed in ' + '{0:.2f}'.format(e5/60) + ' minutes', 'white','on_green'))
+    
+    if block_rip_err or mp_conv_err or serv_trans_error:
+  
+        img = Image.open(r"C:\Users\User\Documents\Code\bruker_calibration\evil_packer.jpg")
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.truetype("arial.ttf", 50)
+        draw.text((0, 0),error_mess,(255,255,255),font=font)
+        img.show()
 
 
 if __name__ == '__main__':

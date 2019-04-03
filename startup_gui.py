@@ -9,6 +9,7 @@ import os
 import subprocess
 import time
 import yaml
+import ruamel.yaml
 from pathlib import Path
 
 
@@ -121,19 +122,18 @@ class startup_gui(QWidget):
             self.header_text.setText('Sorry {} i cant connect to the packerstation right now, make sure it is connected and reselect your name'.format(self.user_name))
             
             
+        
         #setup blimp yaml      
+        yaml = ruamel.yaml.YAML() 
         with open(self.yaml_path, 'r') as stream:
             yaml_dict = yaml.load(stream)
-        
 
         yaml_dict['output_path'] = os.path.join(self.local_path, 'blimp')
         
             
         with open(self.yaml_path, 'w') as f:
             yaml.dump(yaml_dict, f)
-        
-
-           
+     
         # open the folders in explorer
         subprocess.Popen('explorer "{0}"'.format(self.local_path))
         #subprocess.Popen('explorer "{0}"'.format(self.pstation_path))
