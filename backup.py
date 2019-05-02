@@ -416,6 +416,7 @@ def main():
                 else:
                     print('No RAWDATA files to convert')
                 e2 = time.time() - t0
+        1/0
             
     except:
         em = 'ERROR IN\nIMAGE-BLOCK RIPPING TIFF\nCONVERSION\n\n\n'

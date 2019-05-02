@@ -11,6 +11,8 @@ import time
 import yaml
 import ruamel.yaml
 from pathlib import Path
+from playsound import playsound
+from threading import Thread
 
 
 class startup_gui(QWidget):
@@ -22,11 +24,17 @@ class startup_gui(QWidget):
         self.build_dropdown()
         self.build_gif()
         
+        
+
+        
         #whether the try again and continue buttons are already present
         self.buttons_present = False
         self.show()
         
         self.yaml_path = r'C:\Users\User\Documents\Code\blimp\blimp_settings.yaml'
+        
+        t = Thread(target=self.run_sound, args = [])
+        t.start()
         
 
     def initUI(self):
@@ -75,12 +83,19 @@ class startup_gui(QWidget):
       
         combo.activated[str].connect(self.got_username) 
         
+        
+    def run_sound(self):
+        wav_path = r'C:\Users\User\Documents\Code\bruker_calibration\packerStartUp.wav'
+        playsound(wav_path)
+        
+        
 
     def got_username(self, text):
         if text == '':
             #do not continue if user accidently presses blank list option
             self.build_dropdown()       
         else:
+            
             self.user_name = text
             self.create_folders()
             self.header_text.setText('Hi {}, I\'m setting up your folders and txt file for today \nIf you would like to set up PrairieView click the button below'.format(self.user_name))
@@ -96,19 +111,19 @@ class startup_gui(QWidget):
         now = datetime.datetime.now()
         self.date_today = now.strftime('%Y-%m-%d')
         if self.user_name == 'Jimmy':
-            self.local_path = r'F:\Data\jrowland\{}'.format(self.date_today)
+            self.local_path = r'E:\Data\jrowland\{}'.format(self.date_today)
             self.pstation_path = r'Z:\jrowland\Data\{}'.format(self.date_today)
         elif self.user_name == 'Adam':
-            self.local_path = r'F:\Data\apacker\{}'.format(self.date_today)
+            self.local_path = r'E:\Data\apacker\{}'.format(self.date_today)
             self.pstation_path = r'Z:\apacker\Data\{}'.format(self.date_today)
         elif self.user_name == 'Ankit':
-            self.local_path = r'F:\Data\aranjan\{}'.format(self.date_today)
+            self.local_path = r'E:\Data\aranjan\{}'.format(self.date_today)
             self.pstation_path = r'Z:\aranjan\Data\{}'.format(self.date_today)
         elif self.user_name == 'Rob':
-            self.local_path = r'F:\Data\rlees\{}'.format(self.date_today)
+            self.local_path = r'E:\Data\rlees\{}'.format(self.date_today)
             self.pstation_path = r'Z:\rlees\Data\{}'.format(self.date_today)
         elif self.user_name == 'Adam H':
-            self.local_path = r'F:\Data\aharris\{}'.format(self.date_today)
+            self.local_path = r'E:\Data\aharris\{}'.format(self.date_today)
             self.pstation_path = r'Z:\aharris\Data\{}'.format(self.date_today)
             
             
@@ -157,10 +172,13 @@ class startup_gui(QWidget):
             pl.Connect()
             pl.SendScriptCommands('-SetSavePath ' + self.local_path)
             pl.SendScriptCommands('-SetFileName ' + 'Singlescan ' + self.date_today + '_s')
+            pl.SendScriptCommands('-SetFileIteration ' + 'Singlescan ' + '1')
             pl.SendScriptCommands('-SetFileName ' + 'Zseries ' + self.date_today + '_z')
+            pl.SendScriptCommands('-SetFileIteration ' + 'Zseries ' + '1')
             pl.SendScriptCommands('-SetFileName '  + 'Tseries ' + self.date_today + '_t')
+            pl.SendScriptCommands('-SetFileIteration ' + 'Tseries ' + '1')
             pl.SendScriptCommands('-SetImageSize ' +  '512')
-            pl.SendScriptCommands('-SetOpticalZoom ' + '1.0') 
+            #pl.SendScriptCommands('-SetOpticalZoom ' + '1.0') 
             # set this last as it takes time
             pl.SendScriptCommands('-SetAcquisitionMode ' + 'ResonantGalvo')
         except:
